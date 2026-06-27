@@ -1,0 +1,11 @@
+# Claude Code 로컬 설정 (컴퓨터마다 다른 권한 — 안 올림)
+.claude/settings.local.json
+
+# OS 잡파일
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 의존성/빌드 (혹시 나중에 생기면)
+node_modules/
+dist/
