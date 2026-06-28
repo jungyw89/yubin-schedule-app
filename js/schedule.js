@@ -16,7 +16,7 @@
       if (!editing) editingId = null;
     }
 
-    root.appendChild(buildForm(categories, handlers, editing));
+    root.appendChild(buildForm(activities, categories, handlers, editing));
     root.appendChild(buildList(activities, categories, handlers));
   }
 
@@ -25,7 +25,17 @@
     return null;
   }
 
-  function buildForm(categories, handlers, editing) {
+  // [s, en) 구간과 겹치는 첫 일과를 반환(없으면 null). excludeId는 수정 중인 자기 자신.
+  function overlap(activities, s, en, excludeId) {
+    for (var i = 0; i < activities.length; i++) {
+      var a = activities[i];
+      if (a.id === excludeId) continue;
+      if (s < a.end && a.start < en) return a;
+    }
+    return null;
+  }
+
+  function buildForm(activities, categories, handlers, editing) {
     var form = document.createElement("form");
     form.className = "add-form";
 
@@ -91,6 +101,15 @@
       if (!lab) {
         label.focus();
         return;
+      }
+      var clash = overlap(activities, s, en, editing ? editing.id : null);
+      if (clash) {
+        var ok = global.confirm(
+          '"' + clash.label + '" (' + Time.fmt(clash.start) + " ~ " +
+            Time.fmt(clash.end) + ")와(과) 시간이 겹쳐요.\n그래도 " +
+            (editing ? "수정" : "추가") + "할까요?"
+        );
+        if (!ok) return;
       }
       var fields = { start: s, end: en, label: lab, categoryId: select.value };
       if (editing) {
