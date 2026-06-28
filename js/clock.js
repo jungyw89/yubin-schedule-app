@@ -1,4 +1,4 @@
-/* clock.js — 24시간 원형 시계 + 범례 그리기 (전역 Clock) */
+/* clock.js — 24시간 원형 시계 + 범례 + 드래그(이동/늘리기) (전역 Clock) */
 (function (global) {
   "use strict";
 
@@ -11,6 +11,12 @@
   var R_TICK_OUT = 210;
   var R_RING_OUT = 200;
   var R_RING_IN = 112;
+  var R_MID = (R_RING_IN + R_RING_OUT) / 2;
+
+  var STEP = 5; // 분 단위 스냅
+  var MIN_DUR = 5; // 최소 길이(분)
+
+  var drag = null; // 드래그 상태
 
   function el(tag, attrs) {
     var node = document.createElementNS(NS, tag);
@@ -28,16 +34,72 @@
     return m;
   }
 
-  function render(activities, categories, onToggle) {
+  // handlers: { toggle(id), setTimes(id, start, end) }
+  function render(activities, categories, handlers) {
     var svg = document.getElementById("clock");
     if (!svg) return;
     svg.setAttribute("viewBox", "0 0 " + SIZE + " " + SIZE);
     while (svg.firstChild) svg.removeChild(svg.firstChild);
 
-    // 시계판
-    svg.appendChild(el("circle", { cx: CX, cy: CY, r: R_FACE, class: "clock-face" }));
+    drawFace(svg);
 
-    // 눈금 + 숫자 (3시간 간격 라벨, 1시간 간격 눈금)
+    var cm = catMap(categories);
+    var sorted = activities.slice().sort(function (a, b) {
+      return a.start - b.start;
+    });
+
+    var nodes = {}; // id -> { act, path, label, hStart, hEnd, color }
+
+    // 1) 일과 호 + 라벨
+    for (var i = 0; i < sorted.length; i++) {
+      var act = sorted[i];
+      if (act.end <= act.start) continue;
+      var cat = cm[act.categoryId];
+      var color = cat ? cat.color : "#9aa2b1";
+
+      var path = el("path", {
+        class: "clock-arc" + (act.done ? " done" : ""),
+        fill: color,
+        "data-id": act.id,
+      });
+      var title = el("title");
+      path.appendChild(title);
+      svg.appendChild(path);
+
+      var label = null;
+      if (act.end - act.start >= 55) {
+        label = el("text", { class: "clock-arc-label" });
+        label.textContent = (cat ? cat.emoji : "") + act.label;
+        svg.appendChild(label);
+      }
+
+      nodes[act.id] = { act: act, path: path, label: label, color: color, cat: cat };
+      updateArcVisual(nodes[act.id]);
+    }
+
+    // 2) 손잡이(양 끝) — 호 위에 얹기
+    for (var j = 0; j < sorted.length; j++) {
+      var a2 = sorted[j];
+      if (a2.end <= a2.start) continue;
+      var n = nodes[a2.id];
+      n.hStart = el("circle", { r: 8, class: "clock-handle", "data-id": a2.id });
+      n.hEnd = el("circle", { r: 8, class: "clock-handle", "data-id": a2.id });
+      n.hStart.style.stroke = n.color;
+      n.hEnd.style.stroke = n.color;
+      svg.appendChild(n.hStart);
+      svg.appendChild(n.hEnd);
+      positionHandles(n);
+
+      bindDrag(svg, n.path, n, "move", handlers);
+      bindDrag(svg, n.hStart, n, "resize-start", handlers);
+      bindDrag(svg, n.hEnd, n, "resize-end", handlers);
+    }
+
+    renderLegend(categories);
+  }
+
+  function drawFace(svg) {
+    svg.appendChild(el("circle", { cx: CX, cy: CY, r: R_FACE, class: "clock-face" }));
     for (var h = 0; h < 24; h++) {
       var ang = (h / 24) * 360;
       var major = h % 3 === 0;
@@ -58,60 +120,140 @@
         svg.appendChild(t);
       }
     }
-
-    // 가운데 안내
     var c1 = el("text", { x: CX, y: CY - 8, class: "clock-center" });
     c1.textContent = "24시간";
     var c2 = el("text", { x: CX, y: CY + 12, class: "clock-center" });
     c2.textContent = "0시 = 맨 위";
     svg.appendChild(c1);
     svg.appendChild(c2);
+  }
 
-    // 일과 호
-    var cm = catMap(categories);
-    var sorted = activities.slice().sort(function (a, b) {
-      return a.start - b.start;
-    });
-    for (var i = 0; i < sorted.length; i++) {
-      var act = sorted[i];
-      if (act.end <= act.start) continue;
-      var cat = cm[act.categoryId];
-      var color = cat ? cat.color : "#9aa2b1";
-      var a0 = Time.minutesToAngle(act.start);
-      var a1 = Time.minutesToAngle(act.end);
-
-      var path = el("path", {
-        d: Time.annularSector(CX, CY, R_RING_IN, R_RING_OUT, a0, a1),
-        fill: color,
-        class: "clock-arc" + (act.done ? " done" : ""),
-        "data-id": act.id,
-      });
-      var title = el("title");
+  // 호의 path/라벨/제목을 act 값에 맞춰 갱신
+  function updateArcVisual(n) {
+    var act = n.act;
+    var a0 = Time.minutesToAngle(act.start);
+    var a1 = Time.minutesToAngle(act.end);
+    n.path.setAttribute("d", Time.annularSector(CX, CY, R_RING_IN, R_RING_OUT, a0, a1));
+    n.path.setAttribute("class", "clock-arc" + (act.done ? " done" : ""));
+    var title = n.path.querySelector("title");
+    if (title) {
       title.textContent =
-        (cat ? cat.emoji + " " : "") + act.label + " (" + Time.fmt(act.start) + "~" + Time.fmt(act.end) + ")";
-      path.appendChild(title);
-      if (onToggle) {
-        (function (id, node) {
-          node.addEventListener("click", function () {
-            onToggle(id);
-          });
-        })(act.id, path);
-      }
-      svg.appendChild(path);
+        (n.cat ? n.cat.emoji + " " : "") + act.label + " (" + Time.fmt(act.start) + "~" + Time.fmt(act.end) + ")";
+    }
+    if (n.label) {
+      var mid = (a0 + a1) / 2;
+      var pm = Time.polar(CX, CY, R_MID, mid);
+      n.label.setAttribute("x", pm.x.toFixed(1));
+      n.label.setAttribute("y", pm.y.toFixed(1));
+    }
+  }
 
-      // 충분히 큰 구간엔 라벨
-      if (act.end - act.start >= 55) {
-        var mid = (a0 + a1) / 2;
-        var pm = Time.polar(CX, CY, (R_RING_IN + R_RING_OUT) / 2, mid);
-        var lab = el("text", {
-          x: pm.x.toFixed(1), y: pm.y.toFixed(1), class: "clock-arc-label",
-        });
-        lab.textContent = (cat ? cat.emoji : "") + act.label;
-        svg.appendChild(lab);
-      }
+  function positionHandles(n) {
+    if (!n.hStart) return;
+    var ps = Time.polar(CX, CY, R_MID, Time.minutesToAngle(n.act.start));
+    var pe = Time.polar(CX, CY, R_MID, Time.minutesToAngle(n.act.end));
+    n.hStart.setAttribute("cx", ps.x.toFixed(1));
+    n.hStart.setAttribute("cy", ps.y.toFixed(1));
+    n.hEnd.setAttribute("cx", pe.x.toFixed(1));
+    n.hEnd.setAttribute("cy", pe.y.toFixed(1));
+  }
+
+  // 화면 좌표 → SVG viewBox 좌표
+  function toSvgPoint(svg, clientX, clientY) {
+    var pt = svg.createSVGPoint();
+    pt.x = clientX;
+    pt.y = clientY;
+    var m = svg.getScreenCTM();
+    if (!m) return { x: clientX, y: clientY };
+    var loc = pt.matrixTransform(m.inverse());
+    return { x: loc.x, y: loc.y };
+  }
+
+  function pointerMinutes(svg, e) {
+    var p = toSvgPoint(svg, e.clientX, e.clientY);
+    return Time.minutesFromPoint(CX, CY, p.x, p.y);
+  }
+
+  function bindDrag(svg, target, n, mode, handlers) {
+    target.addEventListener("pointerdown", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var downMin = pointerMinutes(svg, e);
+      drag = {
+        n: n,
+        mode: mode,
+        handlers: handlers,
+        origStart: n.act.start,
+        origEnd: n.act.end,
+        duration: n.act.end - n.act.start,
+        offset: downMin - n.act.start,
+        downMin: downMin,
+        lastMin: downMin,
+        moved: false,
+        svg: svg,
+        pointerId: e.pointerId,
+      };
+      try {
+        svg.setPointerCapture(e.pointerId);
+      } catch (err) {}
+      svg.addEventListener("pointermove", onMove);
+      svg.addEventListener("pointerup", onUp);
+      svg.addEventListener("pointercancel", onUp);
+    });
+  }
+
+  function onMove(e) {
+    if (!drag) return;
+    e.preventDefault();
+    var cur = pointerMinutes(drag.svg, e);
+    // 자정(맨 위) 넘나들 때 점프 방지: 직전 값과 가깝게 보정
+    while (cur - drag.lastMin > 720) cur -= 1440;
+    while (cur - drag.lastMin < -720) cur += 1440;
+    drag.lastMin = cur;
+
+    var act = drag.n.act;
+    var ns, ne;
+    if (drag.mode === "move") {
+      ns = Time.snap(cur - drag.offset, STEP);
+      ns = Time.clamp(ns, 0, 1440 - drag.duration);
+      ne = ns + drag.duration;
+    } else if (drag.mode === "resize-start") {
+      ns = Time.snap(cur, STEP);
+      ns = Time.clamp(ns, 0, drag.origEnd - MIN_DUR);
+      ne = drag.origEnd;
+    } else {
+      ne = Time.snap(cur, STEP);
+      ne = Time.clamp(ne, drag.origStart + MIN_DUR, 1440);
+      ns = drag.origStart;
     }
 
-    renderLegend(categories);
+    if (Math.abs(cur - drag.downMin) >= STEP) drag.moved = true;
+    if (ns === act.start && ne === act.end) return;
+
+    act.start = ns;
+    act.end = ne;
+    updateArcVisual(drag.n);
+    positionHandles(drag.n);
+  }
+
+  function onUp(e) {
+    if (!drag) return;
+    var d = drag;
+    drag = null;
+    try {
+      d.svg.releasePointerCapture(d.pointerId);
+    } catch (err) {}
+    d.svg.removeEventListener("pointermove", onMove);
+    d.svg.removeEventListener("pointerup", onUp);
+    d.svg.removeEventListener("pointercancel", onUp);
+
+    var act = d.n.act;
+    if (!d.moved && act.start === d.origStart && act.end === d.origEnd) {
+      // 그냥 탭 → 완료 토글
+      d.handlers.toggle(act.id);
+    } else {
+      d.handlers.setTimes(act.id, act.start, act.end);
+    }
   }
 
   function renderLegend(categories) {

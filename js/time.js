@@ -46,6 +46,25 @@
     };
   }
 
+  // 직교좌표(시계 안 한 점) → 분(0~1440). 위쪽=0분, 시계방향
+  function minutesFromPoint(cx, cy, x, y) {
+    var deg = (Math.atan2(y - cy, x - cx) * 180) / Math.PI + 90;
+    while (deg < 0) deg += 360;
+    while (deg >= 360) deg -= 360;
+    return (deg / 360) * MIN_PER_DAY;
+  }
+
+  // 가장 가까운 step(분)으로 맞춤
+  function snap(min, step) {
+    return Math.round(min / step) * step;
+  }
+
+  function clamp(v, lo, hi) {
+    if (v < lo) return lo;
+    if (v > hi) return hi;
+    return v;
+  }
+
   // 도넛 모양 호(annular sector) SVG path. 시계방향 a0→a1
   function annularSector(cx, cy, rInner, rOuter, a0, a1) {
     // 거의 한 바퀴면 살짝 줄여 점이 겹치지 않게
@@ -72,6 +91,9 @@
     clampMin: clampMin,
     minutesToAngle: minutesToAngle,
     polar: polar,
+    minutesFromPoint: minutesFromPoint,
+    snap: snap,
+    clamp: clamp,
     annularSector: annularSector,
   };
 })(window);

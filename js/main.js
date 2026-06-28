@@ -26,6 +26,10 @@
     );
   }
 
+  function isToday(d) {
+    return dateStr(d) === dateStr(new Date());
+  }
+
   function displayStr(d) {
     return (
       d.getFullYear() +
@@ -52,8 +56,9 @@
     var disp = document.getElementById("date-display");
     if (disp) disp.textContent = displayStr(state.date);
 
-    Clock.render(state.activities, state.categories, scheduleHandlers.toggle);
+    Clock.render(state.activities, state.categories, clockHandlers);
     Rewards.render(state.activities);
+    Now.setActivities(state.activities, isToday(state.date));
     Schedule.render(state.activities, state.categories, scheduleHandlers);
     CategoryManager.render(state.categories, categoryHandlers);
   }
@@ -103,6 +108,22 @@
       renderAll();
     },
     refresh: renderAll,
+  };
+
+  // ---------- 시계 드래그 핸들러 ----------
+  var clockHandlers = {
+    toggle: scheduleHandlers.toggle,
+    setTimes: function (id, start, end) {
+      for (var i = 0; i < state.activities.length; i++) {
+        if (state.activities[i].id === id) {
+          state.activities[i].start = start;
+          state.activities[i].end = end;
+          break;
+        }
+      }
+      persistDay();
+      renderAll();
+    },
   };
 
   // ---------- 분류 핸들러 ----------
@@ -180,6 +201,7 @@
     bind("today-btn", "click", goToday);
     bind("theme-toggle", "click", toggleTheme);
 
+    Now.init();
     renderAll();
   }
 
