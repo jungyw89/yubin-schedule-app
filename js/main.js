@@ -10,6 +10,22 @@
     activities: [],
   };
 
+  // 처음 실행 시 자동으로 깔리는 예시 일정 (기능과 무관한 시작 데이터)
+  var SAMPLE = {
+    restCategory: { id: "rest", name: "휴식", color: "#26c6a4", emoji: "😊" },
+    activities: [
+      { start: 570, end: 630, label: "브런치 만들기", categoryId: "meal" },
+      { start: 630, end: 690, label: "가족 보드게임 대회", categoryId: "play" },
+      { start: 690, end: 750, label: "휴식 (부모님 커피타임)", categoryId: "rest" },
+      { start: 750, end: 810, label: "점심 식사", categoryId: "meal" },
+      { start: 810, end: 930, label: "거실 캠핑 & 방탈출", categoryId: "play" },
+      { start: 930, end: 1050, label: "우리 집 시네마", categoryId: "play" },
+      { start: 1050, end: 1140, label: "저녁 만찬 (배달)", categoryId: "meal" },
+      { start: 1140, end: 1230, label: "샤워 & 하루 마무리", categoryId: "rest" },
+      { start: 1230, end: 1320, label: "취침 준비", categoryId: "sleep" },
+    ],
+  };
+
   function uid() {
     return (
       Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36)
@@ -186,8 +202,40 @@
     applyTheme(next);
   }
 
+  // 처음 한 번만: 오늘 날짜에 예시 일정 주입 (기존 데이터는 건드리지 않음)
+  function seedIfFirstRun() {
+    if (Store.getSeeded()) return;
+    Store.setSeeded(true);
+
+    var todayStr = dateStr(new Date());
+    if (Store.getDay(todayStr).length > 0) return; // 이미 일정 있으면 그대로 둠
+
+    // 휴식 분류 보장
+    var cats = Store.getCategories();
+    var hasRest = cats.some(function (c) {
+      return c.id === SAMPLE.restCategory.id;
+    });
+    if (!hasRest) {
+      cats.push(SAMPLE.restCategory);
+      Store.setCategories(cats);
+    }
+
+    var seeded = SAMPLE.activities.map(function (a) {
+      return {
+        id: uid(),
+        start: a.start,
+        end: a.end,
+        label: a.label,
+        categoryId: a.categoryId,
+        done: false,
+      };
+    });
+    Store.setDay(todayStr, seeded);
+  }
+
   // ---------- 시작 ----------
   function init() {
+    seedIfFirstRun();
     state.categories = Store.getCategories();
     loadDay();
     applyTheme(Store.getTheme());

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>우리 아이 시간표</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1 class="app-title">🕒 우리 아이 시간표</h1>
+      <div class="date-nav">
+        <button type="button" id="prev-day" class="nav-btn" aria-label="이전 날">◀</button>
+        <span id="date-display" class="date-display" aria-live="polite"></span>
+        <button type="button" id="next-day" class="nav-btn" aria-label="다음 날">▶</button>
+        <button type="button" id="today-btn" class="today-btn">오늘</button>
+      </div>
+      <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false">
+        🌙 다크
+      </button>
+    </header>
+
+    <main class="app-main">
+      <!-- 왼쪽: 24시간 시계 -->
+      <section class="clock-panel" aria-labelledby="clock-heading">
+        <h2 id="clock-heading" class="sr-only">24시간 시계</h2>
+        <svg id="clock" class="clock" width="480" height="480"></svg>
+        <ul id="legend" class="legend" aria-label="활동 종류 색 안내"></ul>
+      </section>
+
+      <!-- 오른쪽: 성취 + 할 일 목록 -->
+      <section class="todo-panel" aria-labelledby="todo-heading">
+        <h2 id="todo-heading" class="sr-only">오늘의 할 일</h2>
+
+        <!-- 현재 진행 중인 일정 타이머(타임타이머) -->
+        <div id="now-panel" class="now-panel" aria-live="polite">
+          <svg id="timer-disk" class="timer-disk" viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="timer-bg" cx="50" cy="50" r="46" />
+            <path id="timer-wedge" class="timer-wedge" d="" />
+            <circle class="timer-ring" cx="50" cy="50" r="46" />
+          </svg>
+          <div class="now-info">
+            <span class="now-caption">지금 하는 일</span>
+            <span id="timer-label" class="timer-label">진행 중인 일정 없음</span>
+            <span id="timer-remaining" class="timer-remaining">--:--</span>
+          </div>
+        </div>
+
+        <div id="rewards-panel" class="rewards">
+          <div class="reward-star-box">
+            <svg
+              class="reward-star"
+              viewBox="0 0 100 92"
+              role="progressbar"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+              aria-label="오늘 달성률"
+            >
+              <defs>
+                <linearGradient id="rainbow" x1="0" y1="0" x2="0.15" y2="1">
+                  <stop offset="0%" stop-color="#ff5a5a" />
+                  <stop offset="17%" stop-color="#ff9f43" />
+                  <stop offset="34%" stop-color="#ffd93d" />
+                  <stop offset="50%" stop-color="#4cd964" />
+                  <stop offset="67%" stop-color="#4cc9f0" />
+                  <stop offset="84%" stop-color="#7a5cff" />
+                  <stop offset="100%" stop-color="#c45cff" />
+                </linearGradient>
+                <clipPath id="starClip" clipPathUnits="userSpaceOnUse">
+                  <rect id="star-clip-rect" x="0" y="87.2" width="100" height="92" />
+                </clipPath>
+              </defs>
+              <path
+                class="reward-star-bg"
+                d="M50 4 L60.6 35.4 L93.7 35.8 L67.1 55.6 L77 87.2 L50 68 L23 87.2 L32.9 55.6 L6.3 35.8 L39.4 35.4 Z"
+              />
+              <path
+                class="reward-star-grad"
+                fill="url(#rainbow)"
+                clip-path="url(#starClip)"
+                d="M50 4 L60.6 35.4 L93.7 35.8 L67.1 55.6 L77 87.2 L50 68 L23 87.2 L32.9 55.6 L6.3 35.8 L39.4 35.4 Z"
+              />
+              <path
+                class="reward-star-outline"
+                d="M50 4 L60.6 35.4 L93.7 35.8 L67.1 55.6 L77 87.2 L50 68 L23 87.2 L32.9 55.6 L6.3 35.8 L39.4 35.4 Z"
+              />
+            </svg>
+            <span id="progress-label" class="progress-label">0%</span>
+          </div>
+          <p class="rewards-caption">
+            <span id="star-count" class="star-count">별 0개</span>
+            <span id="stars" class="stars" aria-hidden="true"></span>
+          </p>
+        </div>
+
+        <div id="schedule" class="schedule"></div>
+
+        <details class="cat-manager-wrap">
+          <summary>🎨 분류 관리 (추가 / 삭제)</summary>
+          <div id="category-manager"></div>
+        </details>
+      </section>
+    </main>
+
+    <!-- 일반 스크립트(모듈 아님)로 의존성 순서대로 로드 → 서버 없이 file:// 더블클릭으로도 동작 -->
+    <script src="js/time.js"></script>
+    <script src="js/categories.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/rewards.js"></script>
+    <script src="js/clock.js"></script>
+    <script src="js/categoryManager.js"></script>
+    <script src="js/schedule.js"></script>
+    <script src="js/now.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

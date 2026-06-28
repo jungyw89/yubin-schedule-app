@@ -6,6 +6,7 @@
   var K_CATEGORIES = PREFIX + "categories";
   var K_THEME = PREFIX + "theme";
   var K_DAY = PREFIX + "day:"; // + YYYY-MM-DD
+  var K_SEEDED = PREFIX + "seeded"; // 예시 일정 1회 주입 여부
 
   function read(key, fallback) {
     try {
@@ -57,6 +58,14 @@
     write(K_THEME, t === "dark" ? "dark" : "light");
   }
 
+  function getSeeded() {
+    return read(K_SEEDED, false) === true;
+  }
+
+  function setSeeded(v) {
+    write(K_SEEDED, !!v);
+  }
+
   global.Store = {
     getCategories: getCategories,
     setCategories: setCategories,
@@ -64,5 +73,7 @@
     setDay: setDay,
     getTheme: getTheme,
     setTheme: setTheme,
+    getSeeded: getSeeded,
+    setSeeded: setSeeded,
   };
 })(window);
