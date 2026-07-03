@@ -75,7 +75,7 @@
     if (editing) {
       var cancel = document.createElement("button");
       cancel.type = "button";
-      cancel.className = "icon-btn";
+      cancel.className = "icon-btn cancel-btn";
       cancel.textContent = "취소";
       cancel.addEventListener("click", function () {
         editingId = null;
@@ -118,6 +118,7 @@
   function timeInput(val) {
     var inp = document.createElement("input");
     inp.type = "time";
+    inp.className = "time-input";
     inp.value = val;
     inp.required = true;
     return inp;
