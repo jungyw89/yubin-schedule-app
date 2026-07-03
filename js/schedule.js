@@ -3,6 +3,7 @@
   "use strict";
 
   var editingId = null; // 수정 중인 일과 id
+  var focusedFor = null; // 자동 포커스를 이미 준 일과 id (재렌더마다 포커스 뺏지 않게)
 
   // handlers: { add(fields), update(id, fields), remove(id), toggle(id) }
   function render(activities, categories, handlers) {
@@ -63,6 +64,14 @@
     form.appendChild(select);
     form.appendChild(submit);
 
+    if (editing && focusedFor !== editing.id) {
+      focusedFor = editing.id;
+      global.requestAnimationFrame(function () {
+        label.focus();
+        label.select();
+      });
+    }
+
     if (editing) {
       var cancel = document.createElement("button");
       cancel.type = "button";
@@ -70,6 +79,7 @@
       cancel.textContent = "취소";
       cancel.addEventListener("click", function () {
         editingId = null;
+        focusedFor = null;
         handlers.refresh();
       });
       form.appendChild(cancel);
@@ -95,6 +105,7 @@
       var fields = { start: s, end: en, label: lab, categoryId: select.value };
       if (editing) {
         editingId = null;
+        focusedFor = null;
         handlers.update(editing.id, fields);
       } else {
         handlers.add(fields);
@@ -116,7 +127,7 @@
     if (!activities.length) {
       var empty = document.createElement("p");
       empty.className = "empty";
-      empty.textContent = "아직 일과가 없어요. 위에서 추가해보세요! ✏️";
+      empty.textContent = "아직 일과가 없어요. 위에서 추가하거나, 시계의 빈 곳을 드래그해보세요! ✏️🕐";
       return empty;
     }
 
@@ -189,7 +200,14 @@
     return b;
   }
 
+  // 시계 드래그로 새 일정을 만든 직후 등, 바깥에서 수정 모드로 진입
+  function startEdit(id) {
+    editingId = id;
+    focusedFor = null;
+  }
+
   global.Schedule = {
     render: render,
+    startEdit: startEdit,
   };
 })(window);

@@ -129,6 +129,21 @@
   // ---------- 시계 드래그 핸들러 ----------
   var clockHandlers = {
     toggle: scheduleHandlers.toggle,
+    // 시계 빈 영역 드래그 → 새 일정 생성 후 바로 이름/분류 수정 폼 열기
+    create: function (start, end) {
+      var id = uid();
+      state.activities.push({
+        id: id,
+        start: start,
+        end: end,
+        label: "새 일정",
+        categoryId: state.categories.length ? state.categories[0].id : "",
+        done: false,
+      });
+      persistDay();
+      Schedule.startEdit(id);
+      renderAll();
+    },
     setTimes: function (id, start, end) {
       for (var i = 0; i < state.activities.length; i++) {
         if (state.activities[i].id === id) {

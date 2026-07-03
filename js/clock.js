@@ -17,6 +17,7 @@
   var MIN_DUR = 5; // 최소 길이(분)
 
   var drag = null; // 드래그 상태
+  var createListener = null; // 빈 영역 드래그 리스너 (렌더마다 교체)
 
   function el(tag, attrs) {
     var node = document.createElementNS(NS, tag);
@@ -34,7 +35,7 @@
     return m;
   }
 
-  // handlers: { toggle(id), setTimes(id, start, end) }
+  // handlers: { toggle(id), setTimes(id, start, end), create(start, end) }
   function render(activities, categories, handlers) {
     var svg = document.getElementById("clock");
     if (!svg) return;
@@ -94,6 +95,11 @@
       bindDrag(svg, n.hStart, n, "resize-start", handlers);
       bindDrag(svg, n.hEnd, n, "resize-end", handlers);
     }
+
+    // 3) 빈 영역 드래그 → 새 일정 만들기 (svg는 렌더 간 재사용되므로 리스너 교체)
+    if (createListener) svg.removeEventListener("pointerdown", createListener);
+    createListener = makeCreateListener(svg, activities, categories, handlers);
+    svg.addEventListener("pointerdown", createListener);
 
     renderLegend(categories);
   }
@@ -202,6 +208,64 @@
     });
   }
 
+  // 시계의 빈 영역에서 pointerdown → 드래그한 범위로 새 일정 생성
+  function makeCreateListener(svg, activities, categories, handlers) {
+    return function (e) {
+      if (drag || !handlers.create) return;
+      var p = toSvgPoint(svg, e.clientX, e.clientY);
+      var dx = p.x - CX;
+      var dy = p.y - CY;
+      var r = Math.sqrt(dx * dx + dy * dy);
+      if (r < R_RING_IN - 6 || r > R_TICK_OUT) return; // 중앙/바깥은 무시
+
+      var downMin = Time.minutesFromPoint(CX, CY, p.x, p.y);
+      var gap = freeGap(activities, downMin);
+      if (!gap) return; // 이미 일정이 있는 시간대
+
+      e.preventDefault();
+      var color = categories.length ? categories[0].color : "#9aa2b1";
+      var preview = el("path", { class: "clock-arc creating", fill: color });
+      svg.appendChild(preview);
+
+      var snapped = Time.clamp(Time.snap(downMin, STEP), gap.start, gap.end);
+      drag = {
+        mode: "create",
+        svg: svg,
+        handlers: handlers,
+        preview: preview,
+        downMin: downMin,
+        lastMin: downMin,
+        gapStart: gap.start,
+        gapEnd: gap.end,
+        ns: snapped,
+        ne: snapped,
+        moved: false,
+        pointerId: e.pointerId,
+      };
+      try {
+        svg.setPointerCapture(e.pointerId);
+      } catch (err) {}
+      svg.addEventListener("pointermove", onMove);
+      svg.addEventListener("pointerup", onUp);
+      svg.addEventListener("pointercancel", onUp);
+    };
+  }
+
+  // min을 포함하는 빈 시간대(앞뒤 일정 사이) 계산. 일정 위면 null
+  function freeGap(activities, min) {
+    var start = 0;
+    var end = 1440;
+    for (var i = 0; i < activities.length; i++) {
+      var a = activities[i];
+      if (a.end <= a.start) continue;
+      if (a.start < min && min < a.end) return null;
+      if (a.end <= min && a.end > start) start = a.end;
+      if (a.start >= min && a.start < end) end = a.start;
+    }
+    if (end - start < MIN_DUR) return null;
+    return { start: start, end: end };
+  }
+
   function onMove(e) {
     if (!drag) return;
     e.preventDefault();
@@ -210,6 +274,23 @@
     while (cur - drag.lastMin > 720) cur -= 1440;
     while (cur - drag.lastMin < -720) cur += 1440;
     drag.lastMin = cur;
+
+    if (drag.mode === "create") {
+      var a0 = Time.snap(drag.downMin, STEP);
+      var b0 = Time.snap(cur, STEP);
+      var cs = Time.clamp(Math.min(a0, b0), drag.gapStart, drag.gapEnd);
+      var ce = Time.clamp(Math.max(a0, b0), drag.gapStart, drag.gapEnd);
+      if (Math.abs(cur - drag.downMin) >= STEP) drag.moved = true;
+      drag.ns = cs;
+      drag.ne = ce;
+      if (ce > cs) {
+        drag.preview.setAttribute(
+          "d",
+          Time.annularSector(CX, CY, R_RING_IN, R_RING_OUT, Time.minutesToAngle(cs), Time.minutesToAngle(ce))
+        );
+      }
+      return;
+    }
 
     var act = drag.n.act;
     var ns, ne;
@@ -246,6 +327,12 @@
     d.svg.removeEventListener("pointermove", onMove);
     d.svg.removeEventListener("pointerup", onUp);
     d.svg.removeEventListener("pointercancel", onUp);
+
+    if (d.mode === "create") {
+      if (d.preview.parentNode) d.preview.parentNode.removeChild(d.preview);
+      if (d.moved && d.ne - d.ns >= MIN_DUR) d.handlers.create(d.ns, d.ne);
+      return;
+    }
 
     var act = d.n.act;
     if (!d.moved && act.start === d.origStart && act.end === d.origEnd) {

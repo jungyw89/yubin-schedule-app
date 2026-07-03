@@ -208,6 +208,15 @@ body {
   opacity: 0.85;
 }
 
+/* 빈 영역 드래그로 새 일정 만드는 중 미리보기 */
+.clock-arc.creating {
+  opacity: 0.55;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+  pointer-events: none;
+}
+
 /* 양 끝 손잡이 (늘리기/줄이기) */
 .clock-handle {
   fill: var(--panel);
