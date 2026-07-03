@@ -1,4 +1,4 @@
-/* schedule.js — 일과 추가폼 + 목록 + 체크/수정/삭제 (전역 Schedule) */
+/* schedule.js — 일과 추가폼 + 목록 + 체크/수정(목록 내 인라인)/삭제 (전역 Schedule) */
 (function (global) {
   "use strict";
 
@@ -11,13 +11,9 @@
     if (!root) return;
     root.innerHTML = "";
 
-    var editing = null;
-    if (editingId) {
-      editing = find(activities, editingId);
-      if (!editing) editingId = null;
-    }
+    if (editingId && !find(activities, editingId)) editingId = null;
 
-    root.appendChild(buildForm(categories, handlers, editing));
+    root.appendChild(buildForm(categories, handlers));
     root.appendChild(buildList(activities, categories, handlers));
   }
 
@@ -26,90 +22,74 @@
     return null;
   }
 
-  function buildForm(categories, handlers, editing) {
-    var form = document.createElement("form");
-    form.className = "add-form";
-
-    var start = timeInput(editing ? Time.fmt(editing.start) : "09:00");
+  // 시작/종료 시간, 이름, 분류 입력 필드 묶음 (추가폼과 목록 인라인 수정폼이 공유)
+  function buildFieldset(categories, editingAct) {
+    var start = timeInput(editingAct ? Time.fmt(editingAct.start) : "09:00");
     var sep = document.createElement("span");
     sep.className = "sep";
     sep.textContent = "~";
-    var end = timeInput(editing ? Time.fmt(editing.end) : "10:00");
+    var end = timeInput(editingAct ? Time.fmt(editingAct.end) : "10:00");
 
     var label = document.createElement("input");
     label.type = "text";
     label.className = "label-input";
     label.placeholder = "무엇을 하나요? (예: 공부)";
     label.required = true;
-    if (editing) label.value = editing.label;
+    if (editingAct) label.value = editingAct.label;
 
     var select = document.createElement("select");
     for (var i = 0; i < categories.length; i++) {
       var opt = document.createElement("option");
       opt.value = categories[i].id;
       opt.textContent = (categories[i].emoji ? categories[i].emoji + " " : "") + categories[i].name;
-      if (editing && editing.categoryId === categories[i].id) opt.selected = true;
+      if (editingAct && editingAct.categoryId === categories[i].id) opt.selected = true;
       select.appendChild(opt);
     }
 
+    return { start: start, sep: sep, end: end, label: label, select: select };
+  }
+
+  function readFieldset(fs) {
+    var s = Time.parse(fs.start.value);
+    var en = Time.parse(fs.end.value);
+    var lab = fs.label.value.trim();
+    if (s === null || en === null) {
+      global.alert("시간을 확인해주세요.");
+      return null;
+    }
+    if (en <= s) {
+      global.alert("끝나는 시간이 시작 시간보다 늦어야 해요.");
+      return null;
+    }
+    if (!lab) {
+      fs.label.focus();
+      return null;
+    }
+    return { start: s, end: en, label: lab, categoryId: fs.select.value };
+  }
+
+  // 새 일과 추가 전용 폼 (항상 상단에 표시)
+  function buildForm(categories, handlers) {
+    var form = document.createElement("form");
+    form.className = "add-form";
+
+    var fs = buildFieldset(categories, null);
     var submit = document.createElement("button");
     submit.type = "submit";
     submit.className = "add-btn";
-    submit.textContent = editing ? "수정 완료" : "추가";
+    submit.textContent = "추가";
 
-    form.appendChild(start);
-    form.appendChild(sep);
-    form.appendChild(end);
-    form.appendChild(label);
-    form.appendChild(select);
+    form.appendChild(fs.start);
+    form.appendChild(fs.sep);
+    form.appendChild(fs.end);
+    form.appendChild(fs.label);
+    form.appendChild(fs.select);
     form.appendChild(submit);
-
-    if (editing && focusedFor !== editing.id) {
-      focusedFor = editing.id;
-      global.requestAnimationFrame(function () {
-        label.focus();
-        label.select();
-      });
-    }
-
-    if (editing) {
-      var cancel = document.createElement("button");
-      cancel.type = "button";
-      cancel.className = "icon-btn cancel-btn";
-      cancel.textContent = "취소";
-      cancel.addEventListener("click", function () {
-        editingId = null;
-        focusedFor = null;
-        handlers.refresh();
-      });
-      form.appendChild(cancel);
-    }
 
     form.addEventListener("submit", function (e) {
       e.preventDefault();
-      var s = Time.parse(start.value);
-      var en = Time.parse(end.value);
-      var lab = label.value.trim();
-      if (s === null || en === null) {
-        global.alert("시간을 확인해주세요.");
-        return;
-      }
-      if (en <= s) {
-        global.alert("끝나는 시간이 시작 시간보다 늦어야 해요.");
-        return;
-      }
-      if (!lab) {
-        label.focus();
-        return;
-      }
-      var fields = { start: s, end: en, label: lab, categoryId: select.value };
-      if (editing) {
-        editingId = null;
-        focusedFor = null;
-        handlers.update(editing.id, fields);
-      } else {
-        handlers.add(fields);
-      }
+      var fields = readFieldset(fs);
+      if (fields) handlers.add(fields);
     });
 
     return form;
@@ -142,7 +122,12 @@
     var ul = document.createElement("ul");
     ul.className = "activity-list";
     for (var j = 0; j < sorted.length; j++) {
-      ul.appendChild(row(sorted[j], cm[sorted[j].categoryId], handlers));
+      var act = sorted[j];
+      if (act.id === editingId) {
+        ul.appendChild(editRow(act, categories, handlers));
+      } else {
+        ul.appendChild(row(act, cm[act.categoryId], handlers));
+      }
     }
     return ul;
   }
@@ -163,6 +148,7 @@
 
     function startEdit() {
       editingId = act.id;
+      focusedFor = null;
       handlers.refresh();
     }
 
@@ -186,7 +172,7 @@
     actions.appendChild(edit);
     actions.appendChild(del);
 
-    // 체크박스/액션 버튼을 제외한 행 전체(시간·이름 포함)를 클릭하면 수정 모드로 진입
+    // 체크박스/액션 버튼을 제외한 행 전체(시간·이름 포함)를 클릭하면 그 자리에서 수정 모드로 전환
     li.addEventListener("click", function (e) {
       if (check.contains(e.target) || actions.contains(e.target)) return;
       startEdit();
@@ -196,6 +182,59 @@
     li.appendChild(time);
     li.appendChild(label);
     li.appendChild(actions);
+    return li;
+  }
+
+  // 목록 안에서 바로 펼쳐지는 인라인 수정 행 (별도 상단 폼 대신 해당 자리에서 수정)
+  function editRow(act, categories, handlers) {
+    var li = document.createElement("li");
+    li.className = "activity editing";
+
+    var fs = buildFieldset(categories, act);
+    var form = document.createElement("form");
+    form.className = "add-form";
+
+    var submit = document.createElement("button");
+    submit.type = "submit";
+    submit.className = "add-btn";
+    submit.textContent = "수정 완료";
+
+    var cancel = document.createElement("button");
+    cancel.type = "button";
+    cancel.className = "icon-btn cancel-btn";
+    cancel.textContent = "취소";
+    cancel.addEventListener("click", function () {
+      editingId = null;
+      focusedFor = null;
+      handlers.refresh();
+    });
+
+    form.appendChild(fs.start);
+    form.appendChild(fs.sep);
+    form.appendChild(fs.end);
+    form.appendChild(fs.label);
+    form.appendChild(fs.select);
+    form.appendChild(submit);
+    form.appendChild(cancel);
+
+    if (focusedFor !== act.id) {
+      focusedFor = act.id;
+      global.requestAnimationFrame(function () {
+        fs.label.focus();
+        fs.label.select();
+      });
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var fields = readFieldset(fs);
+      if (!fields) return;
+      editingId = null;
+      focusedFor = null;
+      handlers.update(act.id, fields);
+    });
+
+    li.appendChild(form);
     return li;
   }
 

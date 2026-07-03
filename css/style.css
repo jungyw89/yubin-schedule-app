@@ -516,6 +516,18 @@ html[data-theme="dark"] .progress-label {
   cursor: pointer;
 }
 
+.activity.editing {
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: default;
+}
+
+.activity.editing .add-form {
+  width: 100%;
+  margin-bottom: 0;
+}
+
 .activity.done {
   opacity: 0.6;
 }
