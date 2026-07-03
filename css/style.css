@@ -208,6 +208,12 @@ body {
   opacity: 0.85;
 }
 
+/* 클릭으로 선택됨 (Delete/Backspace로 삭제 가능) */
+.clock-arc.selected {
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
 /* 빈 영역 드래그로 새 일정 만드는 중 미리보기 */
 .clock-arc.creating {
   opacity: 0.55;
@@ -507,6 +513,7 @@ html[data-theme="dark"] .progress-label {
   border-left: 6px solid var(--cat, var(--accent));
   border-radius: 12px;
   background: var(--panel);
+  cursor: pointer;
 }
 
 .activity.done {
@@ -531,19 +538,18 @@ html[data-theme="dark"] .progress-label {
   font-size: 15px;
   color: var(--muted);
   min-width: 106px;
-  cursor: pointer;
 }
 
 .activity-label {
   flex: 1;
   font-weight: 700;
   font-size: 17px;
-  cursor: pointer;
 }
 
 .activity-actions {
   display: flex;
   gap: 4px;
+  cursor: default;
 }
 
 .icon-btn {

@@ -129,6 +129,7 @@
   // ---------- 시계 드래그 핸들러 ----------
   var clockHandlers = {
     toggle: scheduleHandlers.toggle,
+    remove: scheduleHandlers.remove,
     // 시계 빈 영역 드래그 → 새 일정 생성 후 바로 이름/분류 수정 폼 열기
     create: function (start, end) {
       var id = uid();

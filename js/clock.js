@@ -18,6 +18,9 @@
 
   var drag = null; // 드래그 상태
   var createListener = null; // 빈 영역 드래그 리스너 (렌더마다 교체)
+  var selectedId = null; // 클릭으로 선택된 일과 (Delete/Backspace로 삭제)
+  var currentHandlers = null;
+  var currentActivities = [];
 
   function el(tag, attrs) {
     var node = document.createElementNS(NS, tag);
@@ -35,12 +38,23 @@
     return m;
   }
 
-  // handlers: { toggle(id), setTimes(id, start, end), create(start, end) }
+  function find(activities, id) {
+    for (var i = 0; i < activities.length; i++) {
+      if (activities[i].id === id) return activities[i];
+    }
+    return null;
+  }
+
+  // handlers: { toggle(id), setTimes(id, start, end), create(start, end), remove(id) }
   function render(activities, categories, handlers) {
     var svg = document.getElementById("clock");
     if (!svg) return;
     svg.setAttribute("viewBox", "0 0 " + SIZE + " " + SIZE);
     while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+    currentHandlers = handlers;
+    currentActivities = activities;
+    if (selectedId && !find(activities, selectedId)) selectedId = null;
 
     drawFace(svg);
 
@@ -142,7 +156,10 @@
     var a0 = Time.minutesToAngle(act.start);
     var a1 = Time.minutesToAngle(act.end);
     n.path.setAttribute("d", Time.annularSector(CX, CY, R_RING_IN, R_RING_OUT, a0, a1));
-    n.path.setAttribute("class", "clock-arc" + (act.done ? " done" : ""));
+    n.path.setAttribute(
+      "class",
+      "clock-arc" + (act.done ? " done" : "") + (act.id === selectedId ? " selected" : "")
+    );
     var title = n.path.querySelector("title");
     if (title) {
       title.textContent =
@@ -338,12 +355,32 @@
 
     var act = d.n.act;
     if (!d.moved && act.start === d.origStart && act.end === d.origEnd) {
-      // 그냥 탭 → 완료 토글
+      // 그냥 탭 → 완료 토글 + 선택(Delete/Backspace로 삭제 가능)
+      selectedId = act.id;
       d.handlers.toggle(act.id);
     } else {
       d.handlers.setTimes(act.id, act.start, act.end);
     }
   }
+
+  // 선택된 일과가 있을 때 Delete/Backspace로 삭제. 입력창 포커스 중엔 무시.
+  function onKeyDown(e) {
+    if (e.key !== "Delete" && e.key !== "Backspace") return;
+    if (!selectedId || !currentHandlers || !currentHandlers.remove) return;
+    var tag = document.activeElement ? document.activeElement.tagName : "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+    var act = find(currentActivities, selectedId);
+    if (!act) {
+      selectedId = null;
+      return;
+    }
+    e.preventDefault();
+    if (global.confirm('"' + act.label + '" 일과를 삭제할까요?')) {
+      currentHandlers.remove(selectedId);
+      selectedId = null;
+    }
+  }
+  document.addEventListener("keydown", onKeyDown);
 
   function renderLegend(categories) {
     var ul = document.getElementById("legend");

@@ -169,12 +169,10 @@
     var time = document.createElement("span");
     time.className = "activity-time";
     time.textContent = Time.fmt(act.start) + " ~ " + Time.fmt(act.end);
-    time.addEventListener("click", startEdit);
 
     var label = document.createElement("span");
     label.className = "activity-label";
     label.textContent = (cat ? cat.emoji + " " : "") + act.label;
-    label.addEventListener("click", startEdit);
 
     var actions = document.createElement("span");
     actions.className = "activity-actions";
@@ -187,6 +185,12 @@
     });
     actions.appendChild(edit);
     actions.appendChild(del);
+
+    // 체크박스/액션 버튼을 제외한 행 전체(시간·이름 포함)를 클릭하면 수정 모드로 진입
+    li.addEventListener("click", function (e) {
+      if (check.contains(e.target) || actions.contains(e.target)) return;
+      startEdit();
+    });
 
     li.appendChild(check);
     li.appendChild(time);
