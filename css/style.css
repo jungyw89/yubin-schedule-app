@@ -66,7 +66,7 @@ body {
 
 .app-title {
   margin: 0;
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 800;
   letter-spacing: -0.02em;
 }
@@ -79,10 +79,10 @@ body {
 }
 
 .date-display {
-  min-width: 168px;
+  min-width: 188px;
   text-align: center;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .nav-btn,
@@ -92,15 +92,15 @@ body {
   background: var(--panel);
   color: var(--text);
   border-radius: 12px;
-  padding: 8px 12px;
-  font-size: 15px;
+  padding: 10px 14px;
+  font-size: 16px;
   cursor: pointer;
   transition: background 0.15s, transform 0.05s, border-color 0.15s;
 }
 
 .nav-btn {
-  width: 40px;
-  font-size: 16px;
+  width: 44px;
+  font-size: 18px;
 }
 
 .today-btn:hover,
@@ -119,10 +119,10 @@ body {
 /* ---------- 레이아웃 ---------- */
 .app-main {
   display: grid;
-  grid-template-columns: minmax(340px, 640px) 1fr;
-  gap: 22px;
-  padding: 22px;
-  max-width: 1320px;
+  grid-template-columns: minmax(380px, 780px) 1fr;
+  gap: 28px;
+  padding: 28px;
+  max-width: 1680px;
   margin: 0 auto;
 }
 
@@ -138,7 +138,7 @@ body {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 20px;
+  padding: 28px;
 }
 
 .clock-panel {
@@ -154,7 +154,7 @@ body {
 .clock {
   width: 100%;
   height: auto;
-  max-width: 600px;
+  max-width: 740px;
   touch-action: none; /* 아이패드: 시계 드래그 시 화면 스크롤 방지 */
   user-select: none;
   -webkit-user-select: none;
@@ -292,8 +292,8 @@ body {
 }
 
 .timer-disk {
-  width: 86px;
-  height: 86px;
+  width: 100px;
+  height: 100px;
   flex-shrink: 0;
 }
 
@@ -322,14 +322,14 @@ body {
 }
 
 .now-caption {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--muted);
   letter-spacing: 0.02em;
 }
 
 .timer-label {
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 800;
   white-space: nowrap;
   overflow: hidden;
@@ -338,7 +338,7 @@ body {
 
 .timer-remaining {
   font-variant-numeric: tabular-nums;
-  font-size: 30px;
+  font-size: 34px;
   font-weight: 800;
   line-height: 1.1;
   color: #ff3b3b;
@@ -357,14 +357,14 @@ body {
 
 .reward-star-box {
   position: relative;
-  width: 96px;
-  height: 90px;
+  width: 112px;
+  height: 104px;
   flex-shrink: 0;
 }
 
 .reward-star {
-  width: 96px;
-  height: 90px;
+  width: 112px;
+  height: 104px;
   filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.12));
 }
 
@@ -390,7 +390,7 @@ body {
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 18px;
+  font-size: 20px;
   color: var(--text);
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
 }
@@ -407,12 +407,12 @@ html[data-theme="dark"] .progress-label {
 }
 
 .star-count {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 800;
 }
 
 .stars {
-  font-size: 18px;
+  font-size: 20px;
   line-height: 1.2;
   word-break: break-all;
 }
@@ -425,12 +425,12 @@ html[data-theme="dark"] .progress-label {
 .add-form {
   display: grid;
   grid-template-columns: auto auto 1fr auto auto;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
-  padding: 12px;
+  padding: 16px;
   background: var(--accent-soft);
   border-radius: 14px;
-  margin-bottom: 14px;
+  margin-bottom: 18px;
 }
 
 @media (max-width: 560px) {
@@ -449,8 +449,8 @@ html[data-theme="dark"] .progress-label {
   background: var(--panel);
   color: var(--text);
   border-radius: 10px;
-  padding: 9px 10px;
-  font-size: 14px;
+  padding: 11px 12px;
+  font-size: 15px;
   font-family: inherit;
 }
 
@@ -464,9 +464,9 @@ html[data-theme="dark"] .progress-label {
   color: #fff;
   border: none;
   border-radius: 10px;
-  padding: 9px 16px;
+  padding: 11px 18px;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
   cursor: pointer;
 }
 
@@ -486,8 +486,8 @@ html[data-theme="dark"] .progress-label {
 .activity {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
+  gap: 14px;
+  padding: 14px 16px;
   border: 1px solid var(--line);
   border-left: 6px solid var(--cat, var(--accent));
   border-radius: 12px;
@@ -503,8 +503,8 @@ html[data-theme="dark"] .progress-label {
 }
 
 .activity-check {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   accent-color: var(--accent);
   cursor: pointer;
   flex-shrink: 0;
@@ -513,16 +513,16 @@ html[data-theme="dark"] .progress-label {
 .activity-time {
   font-variant-numeric: tabular-nums;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--muted);
-  min-width: 96px;
+  min-width: 106px;
   cursor: pointer;
 }
 
 .activity-label {
   flex: 1;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 17px;
   cursor: pointer;
 }
 
@@ -535,8 +535,8 @@ html[data-theme="dark"] .progress-label {
   border: none;
   background: transparent;
   cursor: pointer;
-  font-size: 15px;
-  padding: 5px 7px;
+  font-size: 17px;
+  padding: 6px 8px;
   border-radius: 8px;
   color: var(--muted);
 }
