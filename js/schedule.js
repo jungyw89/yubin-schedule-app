@@ -160,21 +160,25 @@
       handlers.toggle(act.id);
     });
 
+    function startEdit() {
+      editingId = act.id;
+      handlers.refresh();
+    }
+
     var time = document.createElement("span");
     time.className = "activity-time";
     time.textContent = Time.fmt(act.start) + " ~ " + Time.fmt(act.end);
+    time.addEventListener("click", startEdit);
 
     var label = document.createElement("span");
     label.className = "activity-label";
     label.textContent = (cat ? cat.emoji + " " : "") + act.label;
+    label.addEventListener("click", startEdit);
 
     var actions = document.createElement("span");
     actions.className = "activity-actions";
 
-    var edit = iconBtn("✏️", "수정", function () {
-      editingId = act.id;
-      handlers.refresh();
-    });
+    var edit = iconBtn("✏️", "수정", startEdit);
     var del = iconBtn("🗑️", "삭제", function () {
       if (global.confirm('"' + act.label + '" 일과를 삭제할까요?')) {
         handlers.remove(act.id);

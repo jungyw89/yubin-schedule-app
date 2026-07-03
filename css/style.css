@@ -516,12 +516,14 @@ html[data-theme="dark"] .progress-label {
   font-size: 14px;
   color: var(--muted);
   min-width: 96px;
+  cursor: pointer;
 }
 
 .activity-label {
   flex: 1;
   font-weight: 700;
   font-size: 15px;
+  cursor: pointer;
 }
 
 .activity-actions {
