@@ -428,6 +428,22 @@ html[data-theme="dark"] .progress-label {
   margin-bottom: 14px;
 }
 
+.add-details {
+  margin-bottom: 16px;
+}
+
+.add-details summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--accent);
+  padding: 6px 2px;
+}
+
+.add-details .add-form {
+  margin-top: 10px;
+}
+
 .add-form {
   display: grid;
   grid-template-columns: auto auto auto minmax(140px, 1fr) auto auto auto;

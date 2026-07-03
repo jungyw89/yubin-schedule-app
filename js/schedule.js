@@ -4,6 +4,7 @@
 
   var editingId = null; // 수정 중인 일과 id
   var focusedFor = null; // 자동 포커스를 이미 준 일과 id (재렌더마다 포커스 뺏지 않게)
+  var addOpen = false; // 새 일과 추가 폼이 펼쳐져 있는지 (재렌더에도 유지)
 
   // handlers: { add(fields), update(id, fields), remove(id), toggle(id) }
   function render(activities, categories, handlers) {
@@ -13,7 +14,7 @@
 
     if (editingId && !find(activities, editingId)) editingId = null;
 
-    root.appendChild(buildForm(categories, handlers));
+    root.appendChild(buildAddDetails(categories, handlers));
     root.appendChild(buildList(activities, categories, handlers));
   }
 
@@ -68,7 +69,23 @@
     return { start: s, end: en, label: lab, categoryId: fs.select.value };
   }
 
-  // 새 일과 추가 전용 폼 (항상 상단에 표시)
+  // 접었다 펼 수 있는 "새 일과 추가" 섹션
+  function buildAddDetails(categories, handlers) {
+    var details = document.createElement("details");
+    details.className = "add-details";
+    details.open = addOpen;
+    details.addEventListener("toggle", function () {
+      addOpen = details.open;
+    });
+
+    var summary = document.createElement("summary");
+    summary.textContent = "➕ 새 일과 추가";
+    details.appendChild(summary);
+    details.appendChild(buildForm(categories, handlers));
+    return details;
+  }
+
+  // 새 일과 추가 전용 폼
   function buildForm(categories, handlers) {
     var form = document.createElement("form");
     form.className = "add-form";
