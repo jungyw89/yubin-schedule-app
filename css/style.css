@@ -119,10 +119,10 @@ body {
 /* ---------- 레이아웃 ---------- */
 .app-main {
   display: grid;
-  grid-template-columns: minmax(340px, 520px) 1fr;
+  grid-template-columns: minmax(340px, 640px) 1fr;
   gap: 22px;
   padding: 22px;
-  max-width: 1180px;
+  max-width: 1320px;
   margin: 0 auto;
 }
 
@@ -154,7 +154,7 @@ body {
 .clock {
   width: 100%;
   height: auto;
-  max-width: 440px;
+  max-width: 600px;
   touch-action: none; /* 아이패드: 시계 드래그 시 화면 스크롤 방지 */
   user-select: none;
   -webkit-user-select: none;

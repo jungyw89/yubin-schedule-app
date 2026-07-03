@@ -106,23 +106,25 @@
 
   function drawFace(svg) {
     svg.appendChild(el("circle", { cx: CX, cy: CY, r: R_FACE, class: "clock-face" }));
-    for (var h = 0; h < 24; h++) {
-      var ang = (h / 24) * 360;
-      var major = h % 3 === 0;
+    // 30분 간격으로 눈금(48개), 정시에만 숫자 표시
+    for (var i = 0; i < 48; i++) {
+      var isHour = i % 2 === 0;
+      var min = i * 30;
+      var ang = Time.minutesToAngle(min);
       var pOut = Time.polar(CX, CY, R_TICK_OUT, ang);
-      var pIn = Time.polar(CX, CY, major ? R_RING_OUT : R_TICK_OUT - 8, ang);
+      var pIn = Time.polar(CX, CY, isHour ? R_RING_OUT : R_TICK_OUT - 6, ang);
       svg.appendChild(
         el("line", {
           x1: pIn.x.toFixed(1), y1: pIn.y.toFixed(1),
           x2: pOut.x.toFixed(1), y2: pOut.y.toFixed(1),
-          class: "clock-tick" + (major ? " major" : ""),
-          "stroke-width": major ? 2 : 1,
+          class: "clock-tick" + (isHour ? " major" : ""),
+          "stroke-width": isHour ? 2 : 1,
         })
       );
-      if (major) {
+      if (isHour) {
         var pn = Time.polar(CX, CY, R_NUM, ang);
         var t = el("text", { x: pn.x.toFixed(1), y: pn.y.toFixed(1), class: "clock-num" });
-        t.textContent = h;
+        t.textContent = min / 60;
         svg.appendChild(t);
       }
     }
