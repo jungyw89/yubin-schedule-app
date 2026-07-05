@@ -9,6 +9,25 @@
   var DRAG_THRESHOLD = 10; // px 이상 움직이면 드래그로 판단(가벼운 클릭은 탭으로)
   var STORE_PREFIX = "buddyPos:";
 
+  // ---- 디버그 모드 (?debug=1 로 열면 화면에 이벤트 로그 표시) ----
+  var DEBUG = /[?&]debug=1/.test(location.search);
+  var dbgBox = null;
+  function dbg(msg) {
+    if (!DEBUG) return;
+    if (!dbgBox) {
+      dbgBox = document.createElement("div");
+      dbgBox.style.cssText =
+        "position:fixed;top:0;left:0;right:0;z-index:99999;max-height:40vh;overflow:auto;" +
+        "background:rgba(0,0,0,0.82);color:#0f0;font:12px/1.4 monospace;padding:8px;" +
+        "white-space:pre-wrap;pointer-events:none;";
+      document.body.appendChild(dbgBox);
+    }
+    var t = new Date().toISOString().substr(14, 9);
+    dbgBox.textContent = t + "  " + msg + "\n" + dbgBox.textContent;
+    if (dbgBox.textContent.length > 2000)
+      dbgBox.textContent = dbgBox.textContent.slice(0, 2000);
+  }
+
   function loadPos(name) {
     try {
       var raw = localStorage.getItem(STORE_PREFIX + name);
@@ -49,8 +68,16 @@
 
   function playTrick(buddy) {
     var sprite = buddy.querySelector(".buddy-sprite");
-    if (!sprite || sprite.classList.contains("trick")) return; // 재생 중이면 무시
+    if (!sprite) {
+      dbg("playTrick: sprite 없음!");
+      return;
+    }
+    if (sprite.classList.contains("trick")) {
+      dbg("playTrick: 이미 재생 중 → 무시");
+      return;
+    }
     var name = TRICKS[Math.floor(Math.random() * TRICKS.length)];
+    dbg("▶ TRICK 발동: " + name);
     sprite.classList.add("trick", "trick-" + name);
     var cleanup = function () {
       sprite.classList.remove("trick", "trick-" + name);
@@ -103,6 +130,7 @@
       document.removeEventListener("pointerup", onUp);
       document.removeEventListener("pointercancel", onUp);
       buddy.classList.remove("dragging");
+      dbg("pointerup " + name + " (moved=" + moved + ")");
       if (moved) {
         var rect = buddy.getBoundingClientRect();
         savePos(name, { left: rect.left, top: rect.top });
@@ -115,6 +143,7 @@
     }
 
     buddy.addEventListener("pointerdown", function (e) {
+      dbg("pointerdown " + name + " (type=" + e.pointerType + ", btn=" + e.button + ")");
       if (e.button != null && e.button !== 0) return; // 좌클릭만
       active = true;
       moved = false;
@@ -131,6 +160,7 @@
 
     // 탭 → 재주넘기. click은 (setPointerCapture를 안 쓰므로) 사파리에서도 정상 발생.
     buddy.addEventListener("click", function () {
+      dbg("click " + name + " (suppress=" + suppressClick + ")");
       if (suppressClick) {
         suppressClick = false;
         return;
@@ -149,7 +179,28 @@
 
   function init() {
     var buddies = document.querySelectorAll(".buddy");
+    dbg("init: buddy " + buddies.length + "개 발견");
     for (var i = 0; i < buddies.length; i++) setupBuddy(buddies[i]);
+
+    // 진단: 화면 어디를 클릭하든 실제로 어떤 요소가 눌리는지 로깅
+    if (DEBUG) {
+      document.addEventListener(
+        "pointerdown",
+        function (e) {
+          var el = e.target;
+          var desc = el
+            ? el.tagName + "." + (el.className || "").toString().replace(/\s+/g, ".")
+            : "null";
+          var closestBuddy = el && el.closest ? el.closest(".buddy") : null;
+          dbg(
+            "DOC pointerdown → " +
+              desc +
+              (closestBuddy ? "  [buddy 안!]" : "  [buddy 밖]")
+          );
+        },
+        true
+      );
+    }
 
     // 화면 크기/회전 바뀌면 저장된 위치를 화면 안으로 재보정
     window.addEventListener("resize", function () {
