@@ -1,6 +1,6 @@
 /* 우리 아이 시간표 — 서비스 워커
    버전 문자열을 바꾸면 캐시가 갱신됩니다. (배포 시 코드가 바뀌면 아래 CACHE 값 숫자를 올리세요) */
-const CACHE = "yubin-schedule-v2";
+const CACHE = "yubin-schedule-v3";
 
 const ASSETS = [
   "./",
@@ -19,6 +19,7 @@ const ASSETS = [
   "./js/schedule.js",
   "./js/now.js",
   "./js/main.js",
+  "./js/buddies.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",

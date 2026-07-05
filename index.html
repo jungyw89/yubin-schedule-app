@@ -126,19 +126,37 @@
       </section>
     </main>
 
-    <!-- 모서리 데코 캐릭터 (연합) -->
-    <img
-      src="assets/characters/speakerman.svg"
-      alt=""
-      aria-hidden="true"
-      class="corner-buddy corner-buddy--left"
-    />
-    <img
-      src="assets/characters/cameraman.svg"
-      alt=""
-      aria-hidden="true"
-      class="corner-buddy corner-buddy--right"
-    />
+    <!-- 모서리 데코 캐릭터 (연합) — 드래그로 이동, 클릭하면 재주넘기 -->
+    <div
+      class="buddy buddy--speaker"
+      data-buddy="speaker"
+      role="button"
+      tabindex="0"
+      aria-label="스피커맨 (누르면 재주넘기, 끌어서 위치 이동)"
+    >
+      <img
+        src="assets/characters/speakerman.svg"
+        alt=""
+        aria-hidden="true"
+        class="buddy-sprite"
+        draggable="false"
+      />
+    </div>
+    <div
+      class="buddy buddy--camera"
+      data-buddy="camera"
+      role="button"
+      tabindex="0"
+      aria-label="카메라맨 (누르면 재주넘기, 끌어서 위치 이동)"
+    >
+      <img
+        src="assets/characters/cameraman.svg"
+        alt=""
+        aria-hidden="true"
+        class="buddy-sprite"
+        draggable="false"
+      />
+    </div>
 
     <!-- 일반 스크립트(모듈 아님)로 의존성 순서대로 로드 → 서버 없이 file:// 더블클릭으로도 동작 -->
     <script src="js/time.js"></script>
@@ -150,6 +168,7 @@
     <script src="js/schedule.js"></script>
     <script src="js/now.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/buddies.js"></script>
 
     <!-- 서비스 워커 등록 (오프라인 지원 / 홈 화면 앱) -->
     <script>
