@@ -66,26 +66,46 @@
     el.style.bottom = "auto";
   }
 
+  // 각 재주의 재생 시간(ms)
+  var TRICK_MS = {
+    backflip: 900,
+    frontflip: 900,
+    jump: 700,
+    spin: 800,
+    wiggle: 700,
+  };
+
   function playTrick(buddy) {
     var sprite = buddy.querySelector(".buddy-sprite");
     if (!sprite) {
       dbg("playTrick: sprite 없음!");
       return;
     }
-    if (sprite.classList.contains("trick")) {
+    if (sprite.dataset.tricking === "1") {
       dbg("playTrick: 이미 재생 중 → 무시");
       return;
     }
     var name = TRICKS[Math.floor(Math.random() * TRICKS.length)];
     dbg("▶ TRICK 발동: " + name);
-    sprite.classList.add("trick", "trick-" + name);
+    sprite.dataset.tricking = "1";
+
+    // 인라인 애니메이션으로 강제 실행 (CSS 우선순위/동작줄이기 전부 무시).
+    // 먼저 none으로 초기화 후 리플로우 → 확실히 처음부터 재생.
+    sprite.style.animation = "none";
+    void sprite.offsetWidth; // 리플로우 강제
+    sprite.style.animation =
+      "trick-" + name + " " + TRICK_MS[name] + "ms ease-in-out 1";
+
     var cleanup = function () {
-      sprite.classList.remove("trick", "trick-" + name);
+      sprite.style.animation = ""; // 인라인 제거 → 평소 흔들림(CSS) 복귀
+      delete sprite.dataset.tricking;
       sprite.removeEventListener("animationend", cleanup);
       sprite.removeEventListener("animationcancel", cleanup);
     };
     sprite.addEventListener("animationend", cleanup);
     sprite.addEventListener("animationcancel", cleanup);
+    // 혹시 animationend가 안 오는 브라우저 대비 안전장치
+    setTimeout(cleanup, TRICK_MS[name] + 300);
   }
 
   function setupBuddy(buddy) {
