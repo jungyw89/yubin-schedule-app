@@ -691,3 +691,118 @@ html[data-theme="dark"] .progress-label {
   cursor: pointer;
   padding: 2px;
 }
+
+/* ---------- 태블릿 가로(낮은 높이): 한 화면에 맞게 컴팩트 ---------- */
+/* 아이패드 에어 11" 가로 등, 2단 레이아웃이면서 화면이 낮을 때 적용 */
+@media (min-width: 861px) and (max-height: 920px) {
+  .app-header {
+    padding: 8px 16px;
+    gap: 12px;
+  }
+  .app-title {
+    font-size: 20px;
+  }
+  .date-display {
+    font-size: 15px;
+    min-width: 158px;
+  }
+  .nav-btn,
+  .today-btn,
+  .theme-toggle {
+    padding: 7px 11px;
+    font-size: 14px;
+  }
+  .nav-btn {
+    width: 38px;
+    font-size: 16px;
+  }
+
+  /* 헤더 아래 남은 높이를 꽉 채우고, 페이지 자체 스크롤 제거 */
+  .app-main {
+    gap: 16px;
+    padding: 14px 16px;
+    height: calc(100dvh - 55px);
+    max-width: 1500px;
+  }
+
+  .clock-panel,
+  .todo-panel {
+    padding: 16px;
+    min-height: 0; /* 그리드 내부 스크롤 허용 */
+  }
+
+  /* 왼쪽 시계 패널: sticky 해제하고 시계를 화면 높이에 맞춰 축소 */
+  .clock-panel {
+    position: static;
+    justify-content: center;
+  }
+  .clock {
+    max-width: min(56vh, 100%);
+  }
+  .legend {
+    padding-top: 8px;
+    gap: 6px 10px;
+  }
+  .legend li {
+    font-size: 12px;
+  }
+
+  /* 오른쪽 패널만 내부 스크롤 */
+  .todo-panel {
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  .now-panel {
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    gap: 12px;
+  }
+  .timer-disk {
+    width: 74px;
+    height: 74px;
+  }
+  .timer-label {
+    font-size: 16px;
+  }
+  .timer-remaining {
+    font-size: 25px;
+  }
+  .now-caption {
+    font-size: 12px;
+  }
+
+  .rewards {
+    gap: 12px;
+    padding: 4px 4px 12px;
+    margin-bottom: 12px;
+  }
+  .reward-star-box,
+  .reward-star {
+    width: 82px;
+    height: 76px;
+  }
+  .progress-label {
+    font-size: 15px;
+  }
+  .star-count,
+  .stars {
+    font-size: 16px;
+  }
+
+  .activity {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+  .activity-time {
+    font-size: 13px;
+    min-width: 92px;
+  }
+  .activity-label {
+    font-size: 15px;
+  }
+  .activity-check {
+    width: 20px;
+    height: 20px;
+  }
+}

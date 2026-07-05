@@ -2,46 +2,65 @@
 
 /* 헤더 제목 옆 마스코트 */
 .title-mascot {
-  height: 1.4em;
+  height: 1.75em;
   width: auto;
-  vertical-align: -0.35em;
-  margin-right: 0.15em;
-  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
+  vertical-align: -0.5em;
+  margin-right: 0.2em;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+  animation: mascot-wobble 3.2s ease-in-out infinite;
+  transform-origin: 50% 90%;
 }
 
-/* 화면 모서리에서 빼꼼 나오는 캐릭터 */
+@keyframes mascot-wobble {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+
+/* 화면 모서리에서 크게 빼꼼 나오는 캐릭터 (존재감 UP) */
 .corner-buddy {
   position: fixed;
   bottom: 0;
-  width: 104px;
+  width: 168px;
   height: auto;
-  z-index: 5;
+  z-index: 8;
   pointer-events: none; /* 터치/클릭 방해하지 않음 */
-  opacity: 0.95;
-  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.22));
-  animation: buddy-float 4.5s ease-in-out infinite;
+  opacity: 1;
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.28));
 }
 
 .corner-buddy--left {
-  left: 6px;
-  animation-name: buddy-float-left;
-  animation-delay: 0s;
+  left: 0;
+  transform-origin: 50% 100%;
+  animation: buddy-left 3.8s ease-in-out infinite;
 }
 
 .corner-buddy--right {
-  right: 6px;
-  animation-name: buddy-float-right;
-  animation-delay: 1.6s;
+  right: 0;
+  transform-origin: 50% 100%;
+  animation: buddy-right 3.8s ease-in-out infinite;
+  animation-delay: 1.2s;
 }
 
-/* 대부분 화면 밖으로 내려 머리만 빼꼼(약 42%) 보이게 */
-@keyframes buddy-float-left {
-  0%, 100% { transform: translateY(42%); }
-  50% { transform: translateY(34%); }
+/* 몸통 대부분 보이게(약 12%만 아래로) + 살랑살랑 흔들며 통통 튀는 느낌 */
+@keyframes buddy-left {
+  0%, 100% { transform: translateY(14%) rotate(-4deg); }
+  50% { transform: translateY(4%) rotate(4deg); }
 }
-@keyframes buddy-float-right {
-  0%, 100% { transform: translateY(42%) scaleX(-1); } /* 좌우 반전 → 마주 봄 */
-  50% { transform: translateY(34%) scaleX(-1); }
+@keyframes buddy-right {
+  0%, 100% { transform: translateY(14%) scaleX(-1) rotate(-4deg); } /* 반전 → 마주 봄 */
+  50% { transform: translateY(4%) scaleX(-1) rotate(4deg); }
+}
+
+/* 컴팩트(태블릿 가로): 오른쪽 일정 목록을 안 가리도록
+   두 캐릭터를 왼쪽 시계 아래 여백에 나란히 세운다 (연합 분대 느낌) */
+@media (min-width: 861px) and (max-height: 920px) {
+  .corner-buddy {
+    width: 150px;
+  }
+  .corner-buddy--right {
+    right: auto;
+    left: 160px; /* 스피커맨 오른쪽 옆에 배치 → 서로 마주 봄 */
+  }
 }
 
 /* 화면이 좁거나 낮으면 방해되지 않게 숨김 */
