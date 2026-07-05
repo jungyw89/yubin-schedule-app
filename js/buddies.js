@@ -6,7 +6,7 @@
   "use strict";
 
   var TRICKS = ["backflip", "frontflip", "jump", "spin", "wiggle"];
-  var DRAG_THRESHOLD = 6; // px 이상 움직이면 드래그로 판단
+  var DRAG_THRESHOLD = 10; // px 이상 움직이면 드래그로 판단(가벼운 클릭은 탭으로)
   var STORE_PREFIX = "buddyPos:";
 
   function loadPos(name) {
@@ -71,28 +71,14 @@
       baseLeft = 0,
       baseTop = 0,
       moved = false,
-      dragging = false,
+      active = false,
       suppressClick = false;
 
-    buddy.addEventListener("pointerdown", function (e) {
-      // 마우스는 좌클릭만
-      if (e.button != null && e.button !== 0) return;
-      dragging = true;
-      moved = false;
-      suppressClick = false;
-      startX = e.clientX;
-      startY = e.clientY;
-      var rect = buddy.getBoundingClientRect();
-      baseLeft = rect.left;
-      baseTop = rect.top;
-      try {
-        buddy.setPointerCapture(e.pointerId);
-      } catch (err) {}
-      // preventDefault는 하지 않는다: iOS에서 뒤따르는 click 이벤트를 억제할 수 있음
-    });
-
-    buddy.addEventListener("pointermove", function (e) {
-      if (!dragging) return;
+    // ⚠️ setPointerCapture는 쓰지 않는다:
+    //   WebKit(사파리)에서 setPointerCapture를 호출하면 뒤따르는 click이 발생하지 않는
+    //   알려진 버그가 있어 탭 재주가 먹통이 된다. 드래그는 document 리스너로 처리한다.
+    function onMove(e) {
+      if (!active) return;
       var dx = e.clientX - startX;
       var dy = e.clientY - startY;
       if (!moved && Math.abs(dx) + Math.abs(dy) > DRAG_THRESHOLD) {
@@ -106,30 +92,44 @@
         buddy.style.top = c.top + "px";
         buddy.style.right = "auto";
         buddy.style.bottom = "auto";
+        if (e.cancelable) e.preventDefault();
       }
-    });
+    }
 
-    function endDrag(e) {
-      if (!dragging) return;
-      dragging = false;
+    function onUp() {
+      if (!active) return;
+      active = false;
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onUp);
+      document.removeEventListener("pointercancel", onUp);
       buddy.classList.remove("dragging");
-      try {
-        buddy.releasePointerCapture(e.pointerId);
-      } catch (err) {}
       if (moved) {
         var rect = buddy.getBoundingClientRect();
         savePos(name, { left: rect.left, top: rect.top });
         suppressClick = true; // 드래그였으니 뒤따르는 click은 무시
       } else {
-        // 제자리 탭 → 재주넘기 (pointerup은 iOS 사파리에서 확실히 발생)
+        // 제자리 탭 → 재주넘기 (pointerup 경로. click 폴백과 중복은 가드로 방지)
         playTrick(buddy);
-        suppressClick = true; // 곧 뒤따를 click 중복 방지
+        suppressClick = true;
       }
     }
-    buddy.addEventListener("pointerup", endDrag);
-    buddy.addEventListener("pointercancel", endDrag);
 
-    // click 보조 경로(포인터 이벤트 미지원/누락 환경 대비). 중복은 playTrick 가드로 방지.
+    buddy.addEventListener("pointerdown", function (e) {
+      if (e.button != null && e.button !== 0) return; // 좌클릭만
+      active = true;
+      moved = false;
+      suppressClick = false;
+      startX = e.clientX;
+      startY = e.clientY;
+      var rect = buddy.getBoundingClientRect();
+      baseLeft = rect.left;
+      baseTop = rect.top;
+      document.addEventListener("pointermove", onMove);
+      document.addEventListener("pointerup", onUp);
+      document.addEventListener("pointercancel", onUp);
+    });
+
+    // 탭 → 재주넘기. click은 (setPointerCapture를 안 쓰므로) 사파리에서도 정상 발생.
     buddy.addEventListener("click", function () {
       if (suppressClick) {
         suppressClick = false;
