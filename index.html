@@ -173,10 +173,22 @@
     <!-- 서비스 워커 등록 (오프라인 지원 / 홈 화면 앱) -->
     <script>
       if ("serviceWorker" in navigator) {
+        // 새 버전이 활성화되면 한 번만 자동 새로고침 → 수동 앱 종료 없이 업데이트 적용
+        var swRefreshing = false;
+        navigator.serviceWorker.addEventListener("controllerchange", function () {
+          if (swRefreshing) return;
+          swRefreshing = true;
+          window.location.reload();
+        });
         window.addEventListener("load", function () {
-          navigator.serviceWorker.register("sw.js").catch(function (err) {
-            console.warn("SW 등록 실패:", err);
-          });
+          navigator.serviceWorker
+            .register("sw.js")
+            .then(function (reg) {
+              reg.update(); // 실행 시마다 새 버전 확인
+            })
+            .catch(function (err) {
+              console.warn("SW 등록 실패:", err);
+            });
         });
       }
     </script>

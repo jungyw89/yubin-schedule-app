@@ -71,13 +71,15 @@
       baseLeft = 0,
       baseTop = 0,
       moved = false,
-      dragging = false;
+      dragging = false,
+      suppressClick = false;
 
     buddy.addEventListener("pointerdown", function (e) {
       // 마우스는 좌클릭만
       if (e.button != null && e.button !== 0) return;
       dragging = true;
       moved = false;
+      suppressClick = false;
       startX = e.clientX;
       startY = e.clientY;
       var rect = buddy.getBoundingClientRect();
@@ -86,7 +88,7 @@
       try {
         buddy.setPointerCapture(e.pointerId);
       } catch (err) {}
-      e.preventDefault();
+      // preventDefault는 하지 않는다: iOS에서 뒤따르는 click 이벤트를 억제할 수 있음
     });
 
     buddy.addEventListener("pointermove", function (e) {
@@ -117,12 +119,21 @@
       if (moved) {
         var rect = buddy.getBoundingClientRect();
         savePos(name, { left: rect.left, top: rect.top });
-      } else {
-        playTrick(buddy); // 제자리 탭 → 재주넘기
+        suppressClick = true; // 드래그였으니 뒤따르는 click은 무시
       }
+      // 탭(제자리) 재주는 아래 click 핸들러가 담당 → iOS/브라우저 전반에서 가장 안정적
     }
     buddy.addEventListener("pointerup", endDrag);
     buddy.addEventListener("pointercancel", endDrag);
+
+    // 탭 → 재주넘기 (click은 모든 브라우저/iOS에서 탭에 안정적으로 발생)
+    buddy.addEventListener("click", function () {
+      if (suppressClick) {
+        suppressClick = false; // 드래그 직후의 click은 한 번 무시
+        return;
+      }
+      playTrick(buddy);
+    });
 
     // 키보드 접근성: Enter/Space → 재주넘기
     buddy.addEventListener("keydown", function (e) {

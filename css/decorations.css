@@ -28,6 +28,7 @@
   touch-action: none; /* 드래그 시 화면 스크롤 방지 */
   -webkit-user-select: none;
   user-select: none;
+  -webkit-touch-callout: none; /* iOS 롱프레스 이미지 저장 팝업 방지 */
   filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.28));
   transition: filter 0.15s;
 }
