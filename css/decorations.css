@@ -1,5 +1,14 @@
 /* 스키비디 토일렛 연합 캐릭터 데코레이션 (오리지널 SVG) */
 
+/* 버전 배지 (지금 어떤 버전이 로드됐는지 확인용) */
+.app-ver {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  opacity: 0.6;
+  align-self: center;
+}
+
 /* 헤더 제목 옆 마스코트 */
 .title-mascot {
   height: 1.75em;

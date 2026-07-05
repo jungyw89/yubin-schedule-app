@@ -120,16 +120,19 @@
         var rect = buddy.getBoundingClientRect();
         savePos(name, { left: rect.left, top: rect.top });
         suppressClick = true; // 드래그였으니 뒤따르는 click은 무시
+      } else {
+        // 제자리 탭 → 재주넘기 (pointerup은 iOS 사파리에서 확실히 발생)
+        playTrick(buddy);
+        suppressClick = true; // 곧 뒤따를 click 중복 방지
       }
-      // 탭(제자리) 재주는 아래 click 핸들러가 담당 → iOS/브라우저 전반에서 가장 안정적
     }
     buddy.addEventListener("pointerup", endDrag);
     buddy.addEventListener("pointercancel", endDrag);
 
-    // 탭 → 재주넘기 (click은 모든 브라우저/iOS에서 탭에 안정적으로 발생)
+    // click 보조 경로(포인터 이벤트 미지원/누락 환경 대비). 중복은 playTrick 가드로 방지.
     buddy.addEventListener("click", function () {
       if (suppressClick) {
-        suppressClick = false; // 드래그 직후의 click은 한 번 무시
+        suppressClick = false;
         return;
       }
       playTrick(buddy);
