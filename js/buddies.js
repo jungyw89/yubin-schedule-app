@@ -73,6 +73,10 @@
     jump: 700,
     spin: 800,
     wiggle: 700,
+    walkLeft: 1600,
+    walkRight: 1600,
+    hop: 850,
+    dance: 1300,
   };
 
   // Web Animations API용 키프레임 (CSS에 의존하지 않음 → 사파리/동작줄이기 우회)
@@ -108,6 +112,53 @@
       { transform: "rotate(-11deg)", offset: 0.55 },
       { transform: "rotate(8deg)", offset: 0.75 },
       { transform: "rotate(0deg)", offset: 1 },
+    ],
+    // 왼쪽으로 뒤뚱뒤뚱 걸어갔다 돌아오기
+    walkLeft: [
+      { transform: "translateX(0) translateY(0) rotate(0deg)", offset: 0 },
+      { transform: "translateX(-20px) translateY(-7%) rotate(-6deg)", offset: 0.12 },
+      { transform: "translateX(-40px) translateY(0) rotate(5deg)", offset: 0.24 },
+      { transform: "translateX(-62px) translateY(-7%) rotate(-6deg)", offset: 0.36 },
+      { transform: "translateX(-82px) translateY(0) rotate(0deg)", offset: 0.48 },
+      { transform: "translateX(-82px) translateY(-4%) rotate(0deg)", offset: 0.55 },
+      { transform: "translateX(-62px) translateY(0) rotate(6deg)", offset: 0.66 },
+      { transform: "translateX(-40px) translateY(-7%) rotate(-5deg)", offset: 0.78 },
+      { transform: "translateX(-20px) translateY(0) rotate(6deg)", offset: 0.9 },
+      { transform: "translateX(0) translateY(0) rotate(0deg)", offset: 1 },
+    ],
+    // 오른쪽으로 뒤뚱뒤뚱 걸어갔다 돌아오기
+    walkRight: [
+      { transform: "translateX(0) translateY(0) rotate(0deg)", offset: 0 },
+      { transform: "translateX(20px) translateY(-7%) rotate(6deg)", offset: 0.12 },
+      { transform: "translateX(40px) translateY(0) rotate(-5deg)", offset: 0.24 },
+      { transform: "translateX(62px) translateY(-7%) rotate(6deg)", offset: 0.36 },
+      { transform: "translateX(82px) translateY(0) rotate(0deg)", offset: 0.48 },
+      { transform: "translateX(82px) translateY(-4%) rotate(0deg)", offset: 0.55 },
+      { transform: "translateX(62px) translateY(0) rotate(-6deg)", offset: 0.66 },
+      { transform: "translateX(40px) translateY(-7%) rotate(5deg)", offset: 0.78 },
+      { transform: "translateX(20px) translateY(0) rotate(-6deg)", offset: 0.9 },
+      { transform: "translateX(0) translateY(0) rotate(0deg)", offset: 1 },
+    ],
+    // 통통 두 번 점프
+    hop: [
+      { transform: "translateY(0) scale(1,1)", offset: 0 },
+      { transform: "translateY(0) scale(1.08,0.9)", offset: 0.1 },
+      { transform: "translateY(-32%) scale(0.96,1.06)", offset: 0.28 },
+      { transform: "translateY(0) scale(1.08,0.9)", offset: 0.46 },
+      { transform: "translateY(-40%) scale(0.94,1.08)", offset: 0.64 },
+      { transform: "translateY(0) scale(1.1,0.88)", offset: 0.82 },
+      { transform: "translateY(0) scale(1,1)", offset: 1 },
+    ],
+    // 좌우로 흔들며 춤추기
+    dance: [
+      { transform: "translateX(0) translateY(0) rotate(0deg)", offset: 0 },
+      { transform: "translateX(-18px) translateY(-6%) rotate(-10deg)", offset: 0.14 },
+      { transform: "translateX(18px) translateY(0) rotate(10deg)", offset: 0.28 },
+      { transform: "translateX(-18px) translateY(-6%) rotate(-10deg)", offset: 0.42 },
+      { transform: "translateX(18px) translateY(0) rotate(10deg)", offset: 0.56 },
+      { transform: "translateX(-12px) translateY(-6%) rotate(-8deg)", offset: 0.72 },
+      { transform: "translateX(12px) translateY(0) rotate(8deg)", offset: 0.86 },
+      { transform: "translateX(0) translateY(0) rotate(0deg)", offset: 1 },
     ],
   };
 
