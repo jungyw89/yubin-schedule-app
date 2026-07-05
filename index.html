@@ -2,13 +2,36 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
     <title>우리 아이 시간표</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.webmanifest" />
+    <meta name="theme-color" content="#5c7cfa" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <!-- iOS 홈 화면 앱 설정 -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="시간표" />
+    <link rel="apple-touch-icon" href="icons/icon-180.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
+
     <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/decorations.css" />
   </head>
   <body>
     <header class="app-header">
-      <h1 class="app-title">🕒 우리 아이 시간표</h1>
+      <h1 class="app-title">
+        <img
+          src="assets/characters/tvman.svg"
+          alt=""
+          class="title-mascot"
+          aria-hidden="true"
+        />우리 아이 시간표
+      </h1>
       <div class="date-nav">
         <button type="button" id="prev-day" class="nav-btn" aria-label="이전 날">◀</button>
         <span id="date-display" class="date-display" aria-live="polite"></span>
@@ -103,6 +126,20 @@
       </section>
     </main>
 
+    <!-- 모서리 데코 캐릭터 (연합) -->
+    <img
+      src="assets/characters/speakerman.svg"
+      alt=""
+      aria-hidden="true"
+      class="corner-buddy corner-buddy--left"
+    />
+    <img
+      src="assets/characters/cameraman.svg"
+      alt=""
+      aria-hidden="true"
+      class="corner-buddy corner-buddy--right"
+    />
+
     <!-- 일반 스크립트(모듈 아님)로 의존성 순서대로 로드 → 서버 없이 file:// 더블클릭으로도 동작 -->
     <script src="js/time.js"></script>
     <script src="js/categories.js"></script>
@@ -113,5 +150,16 @@
     <script src="js/schedule.js"></script>
     <script src="js/now.js"></script>
     <script src="js/main.js"></script>
+
+    <!-- 서비스 워커 등록 (오프라인 지원 / 홈 화면 앱) -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("sw.js").catch(function (err) {
+            console.warn("SW 등록 실패:", err);
+          });
+        });
+      }
+    </script>
   </body>
 </html>

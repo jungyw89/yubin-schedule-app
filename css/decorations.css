@@ -1,0 +1,55 @@
+/* 스키비디 토일렛 연합 캐릭터 데코레이션 (오리지널 SVG) */
+
+/* 헤더 제목 옆 마스코트 */
+.title-mascot {
+  height: 1.4em;
+  width: auto;
+  vertical-align: -0.35em;
+  margin-right: 0.15em;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
+}
+
+/* 화면 모서리에서 빼꼼 나오는 캐릭터 */
+.corner-buddy {
+  position: fixed;
+  bottom: 0;
+  width: 104px;
+  height: auto;
+  z-index: 5;
+  pointer-events: none; /* 터치/클릭 방해하지 않음 */
+  opacity: 0.95;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.22));
+  animation: buddy-float 4.5s ease-in-out infinite;
+}
+
+.corner-buddy--left {
+  left: 6px;
+  animation-name: buddy-float-left;
+  animation-delay: 0s;
+}
+
+.corner-buddy--right {
+  right: 6px;
+  animation-name: buddy-float-right;
+  animation-delay: 1.6s;
+}
+
+/* 대부분 화면 밖으로 내려 머리만 빼꼼(약 42%) 보이게 */
+@keyframes buddy-float-left {
+  0%, 100% { transform: translateY(42%); }
+  50% { transform: translateY(34%); }
+}
+@keyframes buddy-float-right {
+  0%, 100% { transform: translateY(42%) scaleX(-1); } /* 좌우 반전 → 마주 봄 */
+  50% { transform: translateY(34%) scaleX(-1); }
+}
+
+/* 화면이 좁거나 낮으면 방해되지 않게 숨김 */
+@media (max-width: 720px), (max-height: 560px) {
+  .corner-buddy { display: none; }
+}
+
+/* 움직임 최소화 선호 사용자 존중 */
+@media (prefers-reduced-motion: reduce) {
+  .corner-buddy { animation: none; }
+}

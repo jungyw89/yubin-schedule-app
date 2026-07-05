@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 260" width="200" height="260" role="img" aria-label="스피커맨">
+  <defs>
+    <linearGradient id="sm-head" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a3f47"/><stop offset="1" stop-color="#22262c"/>
+    </linearGradient>
+    <radialGradient id="sm-woofer" cx="0.4" cy="0.35" r="0.75">
+      <stop offset="0" stop-color="#8b929c"/><stop offset="0.6" stop-color="#565c66"/><stop offset="1" stop-color="#2c3037"/>
+    </radialGradient>
+  </defs>
+
+  <!-- legs -->
+  <rect x="72" y="212" width="22" height="42" rx="4" fill="#1c1f25"/>
+  <rect x="106" y="212" width="22" height="42" rx="4" fill="#1c1f25"/>
+
+  <!-- suit jacket -->
+  <path d="M60 150 h80 v56 a10 10 0 0 1 -10 10 H70 a10 10 0 0 1 -10 -10 Z" fill="#f4f6fa"/>
+  <path d="M60 150 h80 v56 a10 10 0 0 1 -10 10 H70 a10 10 0 0 1 -10 -10 Z" fill="none" stroke="#c9d0da" stroke-width="2"/>
+  <!-- lapels -->
+  <path d="M92 150 L100 176 L108 150 Z" fill="#e7ebf1" stroke="#c9d0da" stroke-width="1.5"/>
+  <path d="M78 150 L100 176 L78 172 Z" fill="#ffffff"/>
+  <path d="M122 150 L100 176 L122 172 Z" fill="#ffffff"/>
+  <!-- red tie -->
+  <path d="M100 168 l6 8 -6 30 -6 -30 Z" fill="#e23b3b" stroke="#b52b2b" stroke-width="1.5"/>
+  <path d="M96 166 l4 4 4 -4 -4 -3 Z" fill="#e23b3b" stroke="#b52b2b" stroke-width="1"/>
+
+  <!-- arms -->
+  <rect x="42" y="150" width="20" height="52" rx="8" fill="#f0f3f8" stroke="#c9d0da" stroke-width="2"/>
+  <rect x="138" y="150" width="20" height="52" rx="8" fill="#f0f3f8" stroke="#c9d0da" stroke-width="2"/>
+
+  <!-- neck -->
+  <rect x="90" y="140" width="20" height="14" fill="#2c3037"/>
+
+  <!-- speaker head -->
+  <rect x="52" y="30" width="96" height="112" rx="10" fill="url(#sm-head)" stroke="#14171b" stroke-width="3"/>
+  <!-- top cabinet line -->
+  <rect x="52" y="30" width="96" height="16" rx="8" fill="#2a2e34"/>
+
+  <!-- 3 gray woofers + 1 white cone (2x2) -->
+  <circle cx="80" cy="72" r="17" fill="url(#sm-woofer)" stroke="#14171b" stroke-width="2"/>
+  <circle cx="80" cy="72" r="6" fill="#20242a"/>
+  <circle cx="120" cy="72" r="17" fill="url(#sm-woofer)" stroke="#14171b" stroke-width="2"/>
+  <circle cx="120" cy="72" r="6" fill="#20242a"/>
+  <circle cx="80" cy="112" r="17" fill="url(#sm-woofer)" stroke="#14171b" stroke-width="2"/>
+  <circle cx="80" cy="112" r="6" fill="#20242a"/>
+  <circle cx="120" cy="112" r="18" fill="#f3f4f6" stroke="#14171b" stroke-width="2"/>
+  <circle cx="120" cy="112" r="6" fill="#d3d7dd"/>
+</svg>
