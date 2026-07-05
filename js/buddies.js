@@ -75,37 +75,89 @@
     wiggle: 700,
   };
 
+  // Web Animations API용 키프레임 (CSS에 의존하지 않음 → 사파리/동작줄이기 우회)
+  var TRICK_KF = {
+    backflip: [
+      { transform: "translateY(0) rotate(0deg)", offset: 0 },
+      { transform: "translateY(-8%) scale(1.05,0.95) rotate(-40deg)", offset: 0.2 },
+      { transform: "translateY(-48%) rotate(-200deg)", offset: 0.55 },
+      { transform: "translateY(0) rotate(-360deg)", offset: 1 },
+    ],
+    frontflip: [
+      { transform: "translateY(0) rotate(0deg)", offset: 0 },
+      { transform: "translateY(-8%) scale(1.05,0.95) rotate(40deg)", offset: 0.2 },
+      { transform: "translateY(-48%) rotate(200deg)", offset: 0.55 },
+      { transform: "translateY(0) rotate(360deg)", offset: 1 },
+    ],
+    jump: [
+      { transform: "translateY(0) scale(1,1)", offset: 0 },
+      { transform: "translateY(0) scale(1.12,0.86)", offset: 0.2 },
+      { transform: "translateY(-48%) scale(0.94,1.1)", offset: 0.5 },
+      { transform: "translateY(0) scale(1.14,0.84)", offset: 0.78 },
+      { transform: "translateY(0) scale(1,1)", offset: 1 },
+    ],
+    spin: [
+      { transform: "translateY(0) rotate(0deg)", offset: 0 },
+      { transform: "translateY(-18%) rotate(-180deg) scale(0.9)", offset: 0.5 },
+      { transform: "translateY(0) rotate(-360deg)", offset: 1 },
+    ],
+    wiggle: [
+      { transform: "rotate(0deg)", offset: 0 },
+      { transform: "rotate(-16deg)", offset: 0.15 },
+      { transform: "rotate(13deg)", offset: 0.35 },
+      { transform: "rotate(-11deg)", offset: 0.55 },
+      { transform: "rotate(8deg)", offset: 0.75 },
+      { transform: "rotate(0deg)", offset: 1 },
+    ],
+  };
+
   function playTrick(buddy) {
     var sprite = buddy.querySelector(".buddy-sprite");
     if (!sprite) {
       dbg("playTrick: sprite 없음!");
       return;
     }
-    if (sprite.dataset.tricking === "1") {
+    if (sprite.__tricking) {
       dbg("playTrick: 이미 재생 중 → 무시");
       return;
     }
-    var name = TRICKS[Math.floor(Math.random() * TRICKS.length)];
-    dbg("▶ TRICK 발동: " + name);
-    sprite.dataset.tricking = "1";
+    var names = Object.keys(TRICK_KF);
+    var name = names[Math.floor(Math.random() * names.length)];
 
-    // 인라인 애니메이션으로 강제 실행 (CSS 우선순위/동작줄이기 전부 무시).
-    // 먼저 none으로 초기화 후 리플로우 → 확실히 처음부터 재생.
+    // Web Animations API (사파리 13.1+ 지원). CSS 우선순위/동작줄이기 영향 안 받음.
+    if (typeof sprite.animate === "function") {
+      dbg("▶ TRICK(WAAPI): " + name);
+      sprite.__tricking = true;
+      var done = function () {
+        sprite.__tricking = false;
+      };
+      try {
+        var anim = sprite.animate(TRICK_KF[name], {
+          duration: TRICK_MS[name],
+          easing: "ease-in-out",
+          fill: "none",
+        });
+        anim.onfinish = done;
+        anim.oncancel = done;
+        dbg("  playState=" + anim.playState);
+      } catch (err) {
+        dbg("  animate 실패: " + err.message);
+        done();
+      }
+      setTimeout(done, TRICK_MS[name] + 500);
+      return;
+    }
+
+    // 폴백: 인라인 CSS 애니메이션
+    dbg("▶ TRICK(CSS): " + name);
+    sprite.__tricking = true;
     sprite.style.animation = "none";
-    void sprite.offsetWidth; // 리플로우 강제
-    sprite.style.animation =
-      "trick-" + name + " " + TRICK_MS[name] + "ms ease-in-out 1";
-
-    var cleanup = function () {
-      sprite.style.animation = ""; // 인라인 제거 → 평소 흔들림(CSS) 복귀
-      delete sprite.dataset.tricking;
-      sprite.removeEventListener("animationend", cleanup);
-      sprite.removeEventListener("animationcancel", cleanup);
-    };
-    sprite.addEventListener("animationend", cleanup);
-    sprite.addEventListener("animationcancel", cleanup);
-    // 혹시 animationend가 안 오는 브라우저 대비 안전장치
-    setTimeout(cleanup, TRICK_MS[name] + 300);
+    void sprite.offsetWidth;
+    sprite.style.animation = "trick-" + name + " " + TRICK_MS[name] + "ms ease-in-out 1";
+    setTimeout(function () {
+      sprite.style.animation = "";
+      sprite.__tricking = false;
+    }, TRICK_MS[name] + 300);
   }
 
   function setupBuddy(buddy) {
